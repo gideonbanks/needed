@@ -153,6 +153,23 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(var(--color-accent-6-rgb), 0.1) !important;
 }
 
+/* Request details page: make placeholders more legible */
+#request-suburb,
+#request-details {
+  font-size: 18px !important;
+  line-height: 1.4;
+}
+
+#request-suburb::placeholder,
+#request-details::placeholder {
+  font-size: 18px !important;
+}
+
+#request-suburb::-webkit-input-placeholder,
+#request-details::-webkit-input-placeholder {
+  font-size: 18px !important;
+}
+
 /* Service cards on /request page: 2 per row on MOBILE only */
 /* Desktop keeps original layout (3 cards per row) */
 @media (max-width: 639px) {

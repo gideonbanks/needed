@@ -9,6 +9,7 @@ import {
   Subtitle,
   Title,
 } from "components/styled/request-flow"
+import { readRequestDetailsFromSessionStorage, writeRequestDetailsToSessionStorage } from "lib/request/storage"
 
 const ServiceGrid = styled(XStack, {
   name: "ServiceGrid",
@@ -35,7 +36,7 @@ const ServiceTile = styled(YStack, {
   alignItems: "center",
   justifyContent: "center",
   cursor: "pointer",
-  borderWidth: 1,
+  borderWidth: 2,
   borderColor: "$borderColor", // Theme-aware border
   position: "relative",
   hoverStyle: {
@@ -84,17 +85,14 @@ const CheckIconContainer = styled(YStack, {
   position: "absolute",
   top: "$2",
   right: "$2",
-  width: 28,
-  height: 28,
+  width: 25,
+  height: 25,
   borderRadius: "$10",
   backgroundColor: "$accent6", // Accent color
   alignItems: "center",
   justifyContent: "center",
   zIndex: 100,
   pointerEvents: "none",
-  borderWidth: 2,
-  borderColor: "white",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
 })
 
 const Footer = styled(Paragraph, {
@@ -118,18 +116,27 @@ const TOP_SERVICES = [
 function RequestServiceContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const urlService = searchParams.get("service")
   const [selectedService, setSelectedService] = useState<string | null>(
-    searchParams.get("service") || null
+    urlService || null
   )
   const navTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    // If the URL doesn't specify a service (common when navigating back),
+    // hydrate from the persisted draft so the prior selection stays highlighted.
+    if (!urlService && selectedService === null) {
+      const stored = readRequestDetailsFromSessionStorage()
+      if (stored?.service) {
+        setSelectedService(stored.service)
+      }
+    }
     return () => {
       if (navTimeoutRef.current) {
         clearTimeout(navTimeoutRef.current)
       }
     }
-  }, [])
+  }, [selectedService, urlService])
 
   const handleServiceSelect = (serviceSlug: string) => {
     if (serviceSlug === "all-services") {
@@ -137,6 +144,18 @@ function RequestServiceContent() {
       return
     }
     setSelectedService(serviceSlug)
+    // Persist selection so it stays highlighted if the user navigates back.
+    // Clear time if they change service.
+    try {
+      const stored = readRequestDetailsFromSessionStorage()
+      const previousService = stored?.service ?? null
+      writeRequestDetailsToSessionStorage({
+        service: serviceSlug,
+        time: previousService && previousService !== serviceSlug ? null : stored?.time ?? null,
+      })
+    } catch {
+      // Ignore storage access errors
+    }
     if (navTimeoutRef.current) {
       clearTimeout(navTimeoutRef.current)
     }
@@ -174,7 +193,7 @@ function RequestServiceContent() {
               >
                 {isSelected ? (
                   <CheckIconContainer>
-                    <Check size={16} color="white" strokeWidth={3} />
+                    <Check size={14} color="white" strokeWidth={3} />
                   </CheckIconContainer>
                 ) : null}
                 <Name>{service.name}</Name>

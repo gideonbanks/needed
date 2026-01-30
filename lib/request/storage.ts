@@ -61,4 +61,3 @@ export function writeRequestDetailsToSessionStorage(update: Partial<StoredReques
     // Ignore storage access errors (Safari private mode, blocked storage, etc.)
   }
 }
-

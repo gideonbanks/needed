@@ -240,7 +240,28 @@ export async function GET(request: Request) {
     )
   }
 
-  const supabase = await createClient()
+  const returnWithCache = (results: ApiResult[]) => {
+    cache.set(cacheKey, { expiresAt: Date.now() + CACHE_TTL_MS, results })
+    return NextResponse.json(
+      { results },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        },
+      }
+    )
+  }
+
+  // If Supabase isn't reachable / tables aren't ready in production yet,
+  // keep the UX working by falling back to the public AddressFinder API.
+  let supabase: Awaited<ReturnType<typeof createClient>> | null = null
+  try {
+    supabase = await createClient()
+  } catch (error) {
+    console.error("Address search error (supabase client):", error)
+    const fallbackResults = await searchAddressFinder({ q: query, locality })
+    return returnWithCache(fallbackResults)
+  }
 
   // Single source of truth: `nz_road_names` (road_name + locality FK).
   let roadQuery = supabase
@@ -258,53 +279,16 @@ export async function GET(request: Request) {
 
   const { data: roads, error: roadError } = await roadQuery
   if (roadError) {
-    // Local dev commonly hits this before `nz_road_names` exists / is populated.
-    if (process.env.NODE_ENV !== "production" && roadError.code === "PGRST205") {
-      const fallbackResults = await searchAddressFinder({
-        q: query,
-        locality,
-      })
-      cache.set(cacheKey, {
-        expiresAt: Date.now() + CACHE_TTL_MS,
-        results: fallbackResults,
-      })
-      return NextResponse.json(
-        { results: fallbackResults },
-        {
-          headers: {
-            "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-          },
-        }
-      )
-    }
-
     console.error("Address search error (nz_road_names):", roadError)
-    // Don't break typing UX in dev, but fail loudly in prod.
-    if (process.env.NODE_ENV !== "production") {
-      return NextResponse.json({ results: [] }, { status: 200 })
-    }
-    return NextResponse.json({ error: "Search failed" }, { status: 500 })
+    const fallbackResults = await searchAddressFinder({ q: query, locality })
+    return returnWithCache(fallbackResults)
   }
 
   // If the table exists but isn't populated yet, keep dev UX working by using the
   // public AddressFinder fallback.
-  if (process.env.NODE_ENV !== "production" && (!roads || roads.length === 0)) {
-    const fallbackResults = await searchAddressFinder({
-      q: query,
-      locality,
-    })
-    cache.set(cacheKey, {
-      expiresAt: Date.now() + CACHE_TTL_MS,
-      results: fallbackResults,
-    })
-    return NextResponse.json(
-      { results: fallbackResults },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-        },
-      }
-    )
+  if (!roads || roads.length === 0) {
+    const fallbackResults = await searchAddressFinder({ q: query, locality })
+    return returnWithCache(fallbackResults)
   }
 
   const localityIds = Array.from(
@@ -321,7 +305,7 @@ export async function GET(request: Request) {
   if (localityError) {
     // If the localities table isn't present in local dev, derive coords from the
     // generated public JSON lookup instead.
-    if (process.env.NODE_ENV !== "production" && localityError.code === "PGRST205") {
+    if (localityError.code === "PGRST205") {
       const coordsMap = await loadLocalityCoordsByLinzId()
       const results: ApiResult[] = (roads || []).flatMap((row) => {
         const coords = coordsMap.get(row.locality_linz_id)
@@ -341,22 +325,12 @@ export async function GET(request: Request) {
       })
 
       const finalResults = disambiguateByDisplayName(results)
-      cache.set(cacheKey, { expiresAt: Date.now() + CACHE_TTL_MS, results: finalResults })
-      return NextResponse.json(
-        { results: finalResults },
-        {
-          headers: {
-            "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-          },
-        }
-      )
+      return returnWithCache(finalResults)
     }
 
     console.error("Address search error (nz_localities):", localityError)
-    if (process.env.NODE_ENV !== "production") {
-      return NextResponse.json({ results: [] }, { status: 200 })
-    }
-    return NextResponse.json({ error: "Search failed" }, { status: 500 })
+    const fallbackResults = await searchAddressFinder({ q: query, locality })
+    return returnWithCache(fallbackResults)
   }
 
   const localityMap = new Map(
@@ -381,14 +355,5 @@ export async function GET(request: Request) {
   })
 
   const finalResults = disambiguateByDisplayName(results)
-  cache.set(cacheKey, { expiresAt: Date.now() + CACHE_TTL_MS, results: finalResults })
-
-  return NextResponse.json(
-    { results: finalResults },
-    {
-      headers: {
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-      },
-    }
-  )
+  return returnWithCache(finalResults)
 }

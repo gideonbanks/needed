@@ -6,6 +6,7 @@ import { type KeyboardEvent, useEffect, useRef, useState } from "react"
 import { styled, Text, XStack, YStack } from "tamagui"
 import { BackButton } from "components/BackButton/BackButton"
 import { ContentContainer, PageContainer, Title } from "components/styled/request-flow"
+import { readRequestDetailsFromSessionStorage, writeRequestDetailsToSessionStorage } from "lib/request/storage"
 
 const ServiceGrid = styled(XStack, {
   name: "ServiceGrid",
@@ -27,7 +28,7 @@ const ServiceTile = styled(XStack, {
   padding: "$4",
   alignItems: "center",
   cursor: "pointer",
-  borderWidth: 1,
+  borderWidth: 2,
   borderColor: "$borderColor", // Theme-aware border
   position: "relative",
   hoverStyle: {
@@ -39,19 +40,17 @@ const ServiceTile = styled(XStack, {
 const CheckIconContainer = styled(YStack, {
   name: "CheckIconContainer",
   position: "absolute",
-  top: 8,
+  top: "50%",
   right: 8,
-  width: 28,
-  height: 28,
-  borderRadius: 14,
+  width: 25,
+  height: 25,
+  borderRadius: 13,
   backgroundColor: "$accent6", // Accent color
   alignItems: "center",
   justifyContent: "center",
+  transform: [{ translateY: -12.5 }],
   zIndex: 100,
   pointerEvents: "none",
-  borderWidth: 2,
-  borderColor: "white",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
 })
 
 const ServiceName = styled(Text, {
@@ -69,7 +68,9 @@ export function AllServicesClient({ services: initialServices }: AllServicesClie
   const router = useRouter()
   const searchParams = useSearchParams()
   const urlSelectedService = searchParams.get("service")
-  const [selectedService, setSelectedService] = useState<string | null>(urlSelectedService)
+  const [selectedService, setSelectedService] = useState<string | null>(() => {
+    return urlSelectedService ?? readRequestDetailsFromSessionStorage()?.service ?? null
+  })
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Cleanup timeout on unmount
@@ -81,9 +82,15 @@ export function AllServicesClient({ services: initialServices }: AllServicesClie
     }
   }, [])
 
-
   const handleServiceSelect = (serviceSlug: string) => {
     setSelectedService(serviceSlug)
+    try {
+      // Persist selection so it stays highlighted if user navigates back.
+      // Clear time since we're choosing a (potentially new) service.
+      writeRequestDetailsToSessionStorage({ service: serviceSlug, time: null })
+    } catch {
+      // Ignore storage access errors
+    }
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
@@ -126,7 +133,7 @@ export function AllServicesClient({ services: initialServices }: AllServicesClie
                   <ServiceName>{service.name}</ServiceName>
                   {isSelected ? (
                     <CheckIconContainer>
-                      <Check size={16} color="white" strokeWidth={3} />
+                      <Check size={14} color="white" strokeWidth={3} />
                     </CheckIconContainer>
                   ) : null}
                 </ServiceTile>

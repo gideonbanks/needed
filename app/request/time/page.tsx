@@ -8,6 +8,7 @@ import {
   ContentContainer,
   Title,
 } from "components/styled/request-flow"
+import { readRequestDetailsFromSessionStorage, writeRequestDetailsToSessionStorage } from "lib/request/storage"
 
 const TimeOption = styled(YStack, {
   name: "TimeOption",
@@ -19,7 +20,7 @@ const TimeOption = styled(YStack, {
   alignItems: "center",
   justifyContent: "center",
   cursor: "pointer",
-  borderWidth: 1,
+  borderWidth: 2,
   borderColor: "$borderColor", // Theme-aware border
   hoverStyle: {
     backgroundColor: "$backgroundHover", // Theme-aware hover
@@ -74,8 +75,9 @@ function RequestTimeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const service = searchParams.get("service")
+  const urlTime = searchParams.get("time")
   const [selectedTime, setSelectedTime] = useState<string | null>(
-    searchParams.get("time") || null
+    urlTime || null
   )
   const navTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -89,9 +91,24 @@ function RequestTimeContent() {
 
   useEffect(() => {
     if (!service) {
+      // If user navigates back here without the URL param, restore from draft.
+      const stored = readRequestDetailsFromSessionStorage()
+      if (stored?.service) {
+        router.replace(`/request/time?service=${encodeURIComponent(stored.service)}`)
+        return
+      }
       router.replace("/request")
+      return
     }
-  }, [service, router])
+
+    // If no time in URL, hydrate from draft (but only if it matches the same service).
+    if (!urlTime && selectedTime === null) {
+      const stored = readRequestDetailsFromSessionStorage()
+      if (stored?.service === service && stored?.time) {
+        setSelectedTime(stored.time)
+      }
+    }
+  }, [service, router, selectedTime, urlTime])
 
   if (!service) {
     return null
@@ -99,6 +116,12 @@ function RequestTimeContent() {
 
   const handleTimeSelect = (timeValue: string) => {
     setSelectedTime(timeValue)
+    // Persist selection so it stays highlighted if the user navigates back.
+    try {
+      writeRequestDetailsToSessionStorage({ service, time: timeValue })
+    } catch {
+      // Ignore storage access errors
+    }
     if (navTimeoutRef.current) {
       clearTimeout(navTimeoutRef.current)
     }

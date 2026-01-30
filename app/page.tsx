@@ -23,6 +23,7 @@ import {
   Zap,
 } from "@tamagui/lucide-icons"
 import type { Route } from "next"
+import Image from "next/image"
 import Link from "next/link"
 import {
   type CSSProperties,
@@ -850,8 +851,14 @@ const FooterCopyright = styled(Text, {
   color: "$colorSecondary",
 })
 
-const FooterMadeIn = styled(Text, {
+const FooterMadeIn = styled(XStack, {
   name: "FooterMadeIn",
+  alignItems: "center",
+  gap: 6,
+})
+
+const FooterMadeInText = styled(Text, {
+  name: "FooterMadeInText",
   fontSize: "$2",
   color: "$colorSecondary",
 })
@@ -1056,6 +1063,12 @@ export default function Web() {
   const servicesTitleColor = isDark ? "white" : "$gray9"
   const serviceIconColor = isDark ? "#01a493" : "#184153"
   const serviceNameColor = isDark ? "#01a493" : "$gray9"
+  const glassCardBg = isDark ? "rgba(31, 31, 31, 0.55)" : "rgba(255, 255, 255, 0.55)"
+  const glassCardStyle: CSSProperties = {
+    backgroundColor: glassCardBg,
+    backdropFilter: "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
+  }
   const heroBgImage = isWide ? "url(/woman-using-needed-on-her-phone.png)" : "none"
   const footerSocialHoverBg = isDark ? "#1f1f1f" : "#e5e5e5"
 
@@ -1252,9 +1265,11 @@ export default function Web() {
                   <ServiceCard
                     alignSelf="center"
                     className="popular-service-card"
+                    borderColor={heroContainerBorderColor}
                     style={
                       {
                         ["--delay"]: `${index * 70}ms`,
+                        ...glassCardStyle,
                       } as React.CSSProperties
                     }
                     {...serviceCardWidthProps}
@@ -1356,7 +1371,7 @@ export default function Web() {
             {WHY_DIFFERENT_BENEFITS.map((benefit) => {
               const BenefitItemIcon = benefit.icon
               return (
-                <BenefitCard key={benefit.title}>
+                <BenefitCard key={benefit.title} borderColor={heroContainerBorderColor}>
                   <BenefitIcon>
                     <BenefitItemIcon size={20} color="#01a493" />
                   </BenefitIcon>
@@ -1489,7 +1504,16 @@ export default function Web() {
             <FooterCopyright>
               © {new Date().getFullYear()} Needed.co.nz. All rights reserved.
             </FooterCopyright>
-            <FooterMadeIn>Made in New Zealand 🇳🇿</FooterMadeIn>
+            <FooterMadeIn>
+              <FooterMadeInText>Made in New Zealand</FooterMadeInText>
+              <Image
+                src="/nz.png"
+                alt="New Zealand"
+                width={16}
+                height={16}
+                style={{ display: "block" }}
+              />
+            </FooterMadeIn>
           </FooterBottom>
         </FooterContainer>
       </Footer>

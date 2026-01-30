@@ -51,7 +51,7 @@ const StyledInput = createNamedStyle("input", {
   name: "StyledInput",
   width: "100%",
   minHeight: 48,
-  fontSize: "$4",
+  fontSize: 18,
   borderWidth: 1,
   borderColor: "$borderColor", // Theme-aware border
   borderRadius: "$2", // Smaller radius to match buttons
@@ -127,7 +127,7 @@ const StyledTextArea = createNamedStyle("textarea", {
   name: "StyledTextArea",
   width: "100%",
   minHeight: 120,
-  fontSize: "$4",
+  fontSize: 18,
   borderWidth: 1,
   borderColor: "$borderColor", // Theme-aware border
   borderRadius: "$2", // Smaller radius to match buttons
@@ -423,9 +423,10 @@ function RequestDetailsContent() {
           <AutocompleteContainer>
             <StyledInput
               id={suburbInputId}
-              placeholder="Eg. Daldy Street, Auckland Central"
+              placeholder="e.g. Daldy Street, Auckland Central"
               value={suburb}
               onChange={handleSuburbChange}
+              style={{ fontFamily: "inherit" }}
               onFocus={() => setIsSuburbFocused(true)}
               onBlur={() => setIsSuburbFocused(false)}
               onKeyDown={handleSuburbKeyDown}
@@ -460,9 +461,11 @@ function RequestDetailsContent() {
         <FormField>
           <Label>Job details</Label>
           <StyledTextArea
+            id="request-details"
             placeholder={placeholder}
             value={details}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setDetails(e.target.value)}
+            style={{ fontFamily: "inherit" }}
             rows={4}
           />
           {errors.details && <ErrorMessage>{errors.details}</ErrorMessage>}
