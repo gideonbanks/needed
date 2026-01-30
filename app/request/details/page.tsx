@@ -312,7 +312,6 @@ function RequestDetailsContent() {
   const selectSuggestion = (suggestion: StreetResult) => {
     setSuburb(suggestion.displayName)
     setSelectedCoordinates({ lat: suggestion.lat, lng: suggestion.lng })
-    setIsSuburbFocused(false)
     setActiveSuggestionIndex(-1)
     setSuggestions([])
     if (errors.suburb) {
