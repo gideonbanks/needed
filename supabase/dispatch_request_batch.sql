@@ -90,6 +90,7 @@ BEGIN
       ON pav.provider_id = pa.provider_id
     WHERE r.id = p_request_id
       -- For "now", only notify providers who are currently available.
+      -- Providers without an availability record are treated as unavailable.
       AND (v_time_need <> 'now' OR pav.is_available = true)
       -- Hard rule: never send the same request to the same provider twice (any batch).
       AND NOT EXISTS (
@@ -111,7 +112,7 @@ BEGIN
     SELECT p_request_id, c.provider_id, p_batch_number
     FROM chosen c
     ON CONFLICT (request_id, provider_id) DO NOTHING
-    RETURNING request_dispatches.provider_id
+    RETURNING provider_id
   )
   SELECT inserted.provider_id FROM inserted;
 END;

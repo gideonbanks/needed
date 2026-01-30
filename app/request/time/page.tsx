@@ -80,6 +80,7 @@ function RequestTimeContent() {
     urlTime || null
   )
   const navTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hasHydratedRef = useRef(false)
 
   useEffect(() => {
     return () => {
@@ -102,13 +103,14 @@ function RequestTimeContent() {
     }
 
     // If no time in URL, hydrate from draft (but only if it matches the same service).
-    if (!urlTime && selectedTime === null) {
+    if (!urlTime && !hasHydratedRef.current) {
+      hasHydratedRef.current = true
       const stored = readRequestDetailsFromSessionStorage()
       if (stored?.service === service && stored?.time) {
         setSelectedTime(stored.time)
       }
     }
-  }, [service, router, selectedTime, urlTime])
+  }, [service, router, urlTime])
 
   if (!service) {
     return null

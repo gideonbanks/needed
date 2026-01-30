@@ -263,6 +263,11 @@ export async function GET(request: Request) {
     return returnWithCache(fallbackResults)
   }
 
+  if (!supabase) {
+    const fallbackResults = await searchAddressFinder({ q: query, locality })
+    return returnWithCache(fallbackResults)
+  }
+
   // Single source of truth: `nz_road_names` (road_name + locality FK).
   let roadQuery = supabase
     .from("nz_road_names")
@@ -284,8 +289,8 @@ export async function GET(request: Request) {
     return returnWithCache(fallbackResults)
   }
 
-  // If the table exists but isn't populated yet, keep dev UX working by using the
-  // public AddressFinder fallback.
+  // If the table exists but isn't populated yet, fall back to the public
+  // AddressFinder API to maintain UX.
   if (!roads || roads.length === 0) {
     const fallbackResults = await searchAddressFinder({ q: query, locality })
     return returnWithCache(fallbackResults)

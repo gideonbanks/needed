@@ -2,6 +2,9 @@ import { createEnv } from "@t3-oss/env-nextjs"
 import { z } from "zod"
 
 export const env = createEnv({
+  // CI runs `next build` with NODE_ENV=production but doesn't have prod secrets.
+  // Allow explicitly skipping validation for build/test jobs.
+  skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
   server: {
     ANALYZE: z
       .enum(["true", "false"])

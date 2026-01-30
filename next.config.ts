@@ -30,7 +30,7 @@ const config: NextConfig = {
     "@tamagui/react-native-svg",
     "react-native-svg", // Also transpile react-native-svg to avoid issues
   ],
-  webpack: (config, { isServer, webpack }) => {
+  webpack: (config, { isServer, webpack, dev }) => {
     // Note: Webpack may show warnings about serializing large strings in cache.
     // This is a harmless performance warning that occurs with large source maps or generated code.
     // It doesn't affect functionality - webpack will still cache correctly.
@@ -56,6 +56,11 @@ const config: NextConfig = {
       ),
       ...(config.plugins || []),
     ]
+
+    // Avoid filesystem cache writes in dev (can fail on some filesystems).
+    if (dev) {
+      config.cache = { type: "memory" }
+    }
     
     if (!isServer) {
 

@@ -121,11 +121,13 @@ function RequestServiceContent() {
     urlService || null
   )
   const navTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hasHydratedRef = useRef(false)
 
   useEffect(() => {
     // If the URL doesn't specify a service (common when navigating back),
     // hydrate from the persisted draft so the prior selection stays highlighted.
-    if (!urlService && selectedService === null) {
+    if (!urlService && !hasHydratedRef.current) {
+      hasHydratedRef.current = true
       const stored = readRequestDetailsFromSessionStorage()
       if (stored?.service) {
         setSelectedService(stored.service)
@@ -136,7 +138,7 @@ function RequestServiceContent() {
         clearTimeout(navTimeoutRef.current)
       }
     }
-  }, [selectedService, urlService])
+  }, [urlService])
 
   const handleServiceSelect = (serviceSlug: string) => {
     if (serviceSlug === "all-services") {
