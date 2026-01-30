@@ -7,9 +7,46 @@ export const env = createEnv({
       .enum(["true", "false"])
       .optional()
       .transform((value) => value === "true"),
+    SUPABASE_SERVICE_ROLE_KEY:
+      process.env.NODE_ENV === "production" ? z.string().min(1) : z.string().min(1).optional(),
+    REQUEST_SEND_TOKEN_SECRET:
+      process.env.NODE_ENV === "production" ? z.string().min(32) : z.string().min(32).optional(),
   },
-  client: {},
+  client: {
+    NEXT_PUBLIC_SUPABASE_URL: z
+      .string()
+      .refine(
+        (val) => {
+          if (process.env.NODE_ENV === "production") {
+            return z.string().url().safeParse(val).success
+          }
+          return val.startsWith("your-") || z.string().url().safeParse(val).success
+        },
+        { message: "Must be a valid URL or placeholder" }
+      )
+      .optional(),
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: z
+      .string()
+      .min(1)
+      .refine(
+        (val) => 
+          val.startsWith("your-") || 
+          val.startsWith("eyJ") || 
+          val.startsWith("sb_publishable_"),
+        { message: "Must be a valid Supabase anon key or placeholder" }
+      )
+      .optional(),
+    NEXT_PUBLIC_ENABLE_MOCK_OTP: z
+      .enum(["true", "false"])
+      .optional()
+      .transform((value) => (value === undefined ? undefined : value === "true")),
+  },
   runtimeEnv: {
     ANALYZE: process.env.ANALYZE,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    REQUEST_SEND_TOKEN_SECRET: process.env.REQUEST_SEND_TOKEN_SECRET,
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_ENABLE_MOCK_OTP: process.env.NEXT_PUBLIC_ENABLE_MOCK_OTP,
   },
 })

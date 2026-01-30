@@ -1,11 +1,9 @@
-import * as fs from "fs"
 
-// https://github.com/francoismassart/eslint-plugin-tailwindcss/pull/381
-// import eslintPluginTailwindcss from "eslint-plugin-tailwindcss"
-import eslintPluginImport from "eslint-plugin-import"
 import eslintPluginNext from "@next/eslint-plugin-next"
+import eslintPluginImport from "eslint-plugin-import"
 import eslintPluginStorybook from "eslint-plugin-storybook"
 import typescriptEslint from "typescript-eslint"
+import * as fs from "fs"
 
 const eslintIgnore = [
   ".git/",
@@ -16,7 +14,10 @@ const eslintIgnore = [
   "coverage/",
   "*.min.js",
   "*.config.js",
-  "*.d.ts",
+  "**/*.d.ts",
+  "lib/supabase/types.ts",
+  "lib/webpack/*.js",
+  "report-bundle-size.js",
 ]
 
 const config = typescriptEslint.config(
@@ -24,8 +25,6 @@ const config = typescriptEslint.config(
     ignores: eslintIgnore,
   },
   ...eslintPluginStorybook.configs["flat/recommended"],
-  //  https://github.com/francoismassart/eslint-plugin-tailwindcss/pull/381
-  // ...eslintPluginTailwindcss.configs["flat/recommended"],
   typescriptEslint.configs.recommended,
   eslintPluginImport.flatConfigs.recommended,
   {
@@ -39,16 +38,15 @@ const config = typescriptEslint.config(
   },
   {
     settings: {
-      tailwindcss: {
-        callees: ["classnames", "clsx", "ctl", "cn", "cva"],
-      },
-
       "import/resolver": {
         typescript: true,
         node: true,
       },
     },
     rules: {
+      "@typescript-eslint/ban-ts-comment": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-require-imports": "error",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {
@@ -57,7 +55,7 @@ const config = typescriptEslint.config(
         },
       ],
       "sort-imports": [
-        "error",
+        "warn",
         {
           ignoreCase: true,
           ignoreDeclarationSort: true,

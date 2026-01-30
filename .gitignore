@@ -34,3 +34,9 @@ storybook-static/
 /playwright/.cache/
 
 /.npm-only-allow
+
+# TypeScript incremental build artifacts
+tsconfig.tsbuildinfo
+
+# Generated road-name seed CSV (large)
+supabase/seed/nz_road_names.csv

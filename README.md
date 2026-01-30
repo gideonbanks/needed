@@ -26,13 +26,29 @@ There is a separate documentation that explains its functionality, highlights co
 
 We encourage you to [visit our docs (docs.blazity.com)](https://docs.blazity.com) to learn more
 
+## Security best practices (environment variables)
+
+WARNING: Never commit real secrets to git.
+
+1. Copy `.env.example` to `.env.local` for local development:
+   ```bash
+   cp .env.example .env.local
+   ```
+2. Ensure `.gitignore` includes:
+   ```
+   .env*.local
+   .env
+   ```
+3. Only `NEXT_PUBLIC_*` variables are exposed to the browser. Keep sensitive keys (like `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`) without this prefix.
+4. Use the Vercel environment variables dashboard for production secrets.
+
 ## Integrated features
 
 ### Boilerplate
 With this template you will get all the boilerplate features included:
 
 * [Next.js 15](https://nextjs.org/) - Performance-optimized configuration using App Directory
-* [Tailwind CSS v4](https://tailwindcss.com/) - Utility-first CSS framework for efficient UI development
+* [Tamagui](https://tamagui.dev/) - Universal design system (Tailwind CSS removed, ready for Tamagui integration)
 * [ESlint 9](https://eslint.org/) and [Prettier](https://prettier.io/) - Code consistency and error prevention
 * [Corepack](https://github.com/nodejs/corepack) & [pnpm](https://pnpm.io/) as the package manager - For project management without compromises 
 * [Strict TypeScript](https://www.typescriptlang.org/) - Enhanced type safety with carefully crafted config and [ts-reset](https://github.com/total-typescript/ts-reset) library
@@ -53,6 +69,9 @@ With this template you will get all the boilerplate features included:
 * Component relationship tools - Graph for managing coupling and cohesion
 * [Semantic Release](https://github.com/semantic-release/semantic-release) - Automated changelog generation
 * [T3 Env](https://env.t3.gg/) - Streamlined environment variable management
+
+### Development note
+This project uses `next dev --webpack` instead of Turbopack because our current React Native Web/Tamagui setup has compatibility issues with Turbopack. Revisit this once Turbopack support stabilizes.
 
 ### Infrastructure & deployments
 

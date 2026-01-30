@@ -1,0 +1,430 @@
+/* Global styles - Tailwind removed, ready for Tamagui */
+/* NOTE: Many rules in this file use !important to override Tamagui inline styles.
+   This is intentional for now but should be revisited if the style system changes. */
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+/* Ensure buttons are fully hoverable */
+.button-secondary,
+a.button-secondary,
+[data-name="Button"].button-secondary {
+  pointer-events: auto !important;
+}
+
+.button-secondary *,
+a.button-secondary *,
+[data-name="Button"].button-secondary * {
+  pointer-events: none !important;
+}
+
+/* Gradient text effect for hero heading */
+[data-name="HeroGradientText"] {
+  background: linear-gradient(135deg, #184153 0%, #01a493 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+  position: relative;
+  line-height: inherit;
+}
+
+/* Step connector - show on desktop only */
+@media (min-width: 768px) {
+  [data-name="StepConnector"] {
+    display: flex !important;
+  }
+}
+
+/* Fix text rendering - ensure text content doesn't overlap */
+/* Tamagui Text/Paragraph components render text nodes that need proper flow */
+/* REMOVED - was causing conflicts */
+
+/* Specifically target header container children to remove inherited spacing */
+.FloatingHeaderContainer > *,
+[data-name="FloatingHeaderContainer"] > * {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Banner - ensure perfect vertical alignment - FORCE IT */
+[data-name="Banner"],
+.FloatingHeaderContainer [data-name="Banner"],
+[class*="Banner"] {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle !important;
+}
+
+[data-name="BannerIcon"],
+[class*="BannerIcon"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+[data-name="BannerText"],
+[class*="BannerText"] {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
+}
+
+html {
+  height: 100%;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+body {
+  /* Avoid `100vw` here: it includes scrollbar width on desktop, which can make
+     centered content (like the homepage header) appear shifted to the right. */
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  /* Only scroll when content actually needs it - no forced scrolling */
+  overflow-y: auto; /* Allow vertical scroll only when needed */
+  min-height: 100%;
+  height: auto;
+  background-color: white;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root {
+  /* Mirror Tamagui token values for use in global CSS */
+  --color-primary-7: #184153;
+  --color-accent-6: #01a493;
+  --color-accent-6-rgb: 1, 164, 147;
+  --color-gray-12: #1a1a1a;
+  --color-gray-4: #e5e5e5;
+  --color-gray-5: #d4d4d4;
+  --color-gray-2: #f5f5f5;
+  --color-white: #ffffff;
+  --color-dark-bg: #1f1f1f;
+  --color-dark-text: #e8e9ea;
+}
+
+/* Theme support */
+html.light {
+  color-scheme: light;
+  background-color: white;
+}
+
+html.dark {
+  color-scheme: dark;
+  background-color: var(--color-dark-bg);
+}
+
+html.dark body {
+  background-color: var(--color-dark-bg);
+  color: var(--color-dark-text);
+}
+
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Input focus styles with brand accent color */
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-accent-6) !important;
+  border-width: 2px !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-accent-6-rgb), 0.1) !important;
+}
+
+/* Service cards on /request page: 2 per row on MOBILE only */
+/* Desktop keeps original layout (3 cards per row) */
+@media (max-width: 639px) {
+  [data-name="ServiceTile"] {
+    width: calc(50% - 6px) !important;
+    min-width: calc(50% - 6px) !important;
+    max-width: calc(50% - 6px) !important;
+    min-height: 120px !important;
+  }
+}
+
+/* Services page (/request/services): 2 per row on DESKTOP only */
+@media (min-width: 640px) {
+  .service-tile {
+    width: calc(50% - 6px) !important;
+    min-width: calc(50% - 6px) !important;
+    max-width: calc(50% - 6px) !important;
+  }
+}
+
+/* Homepage: smooth staggered entrance for "Most popular" service cards */
+@media (prefers-reduced-motion: no-preference) {
+  #services .popular-service-card {
+    animation: popular-service-card-in 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: var(--delay, 0ms);
+    will-change: transform, opacity;
+  }
+
+  #services .popular-service-card [data-name="ServiceIconContainer"] {
+    animation: popular-service-icon-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--delay, 0ms) + 40ms);
+    will-change: transform, opacity;
+  }
+}
+
+@keyframes popular-service-card-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes popular-service-icon-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Simple CSS spinner (avoids react-native-web ActivityIndicator deps) */
+@keyframes needed-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.needed-spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 3px solid rgba(0, 0, 0, 0.18);
+  border-top-color: rgba(var(--color-accent-6-rgb), 1);
+  animation: needed-spin 900ms linear infinite;
+}
+
+html.dark .needed-spinner {
+  border-color: rgba(255, 255, 255, 0.18);
+  border-top-color: rgba(var(--color-accent-6-rgb), 1);
+}
+
+/* Allow service name text to wrap to 2 lines */
+[data-name="ServiceName"] {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  max-width: 100%;
+  display: block;
+  line-height: 1.4;
+  max-height: 3em; /* Allow for 2 lines */
+  overflow: hidden;
+}
+
+
+/* Homepage responsive styles */
+@media (max-width: 768px) {
+  [data-name="NavLinks"] {
+    display: none !important;
+  }
+  
+  [data-name="ServiceCard"] {
+    width: calc(50% - 8px) !important;
+  }
+  
+  [data-name="BenefitCard"] {
+    width: 100% !important;
+  }
+}
+
+@media (min-width: 769px) {
+  [data-name="NavLinks"] {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 480px) {
+  [data-name="ServiceCard"] {
+    width: 100% !important;
+  }
+}
+
+/* Primary button - ensure proper alignment and white text */
+.button-primary,
+.button-primary *,
+.button-primary span,
+.button-primary text,
+[data-name="Button"].button-primary,
+[data-name="Button"].button-primary * {
+  display: inline-flex !important;
+  align-items: center !important;
+  vertical-align: middle !important;
+  color: white !important;
+}
+
+.button-primary,
+[data-name="Button"].button-primary {
+  gap: 8px !important;
+}
+
+
+/* Floating header - make it sticky - use class selector as fallback */
+[data-name="FloatingHeaderContainer"],
+.FloatingHeaderContainer {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 10px !important;
+  z-index: 1000 !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  width: 100% !important;
+  background: transparent !important;
+  /* Ensure no extra spacing from children or gaps */
+  gap: 0 !important;
+  row-gap: 0 !important;
+  column-gap: 0 !important;
+}
+
+/* Remove ALL spacing from the header bar itself */
+/* Floating header - bar alignment and spacing */
+[data-name="FloatingHeader"] {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-direction: row !important;
+}
+
+/* Ensure no parent containers interfere with sticky */
+/* Scope to app root wrapper to avoid affecting portals/modals */
+body > #app-root,
+body > #app-root > div {
+  overflow: visible !important;
+}
+
+/* New Header - sticky and vertically centered */
+[data-name="HeaderContainer"] {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 10px !important;
+  z-index: 1000 !important;
+}
+
+/* Ensure HeroSection has no top margin/padding to control spacing precisely */
+[data-name="HeroSection"] {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* New homepage header bar uses grid to keep the logo perfectly centered */
+[data-name="HeaderBar"] {
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important;
+  align-items: center !important;
+}
+
+[data-name="HeaderLeftGroup"],
+[data-name="HeaderRightGroup"] {
+  display: flex !important;
+  align-items: center !important;
+}
+
+[data-name="HeaderRightGroup"] {
+  justify-content: flex-end !important;
+}
+
+[data-name="HeaderMenuButton"],
+[data-name="HeaderBellButton"],
+[data-name="HeaderLogoGroup"],
+[data-name="HeaderUserButton"],
+[data-name="HeaderLogoCircle"],
+[data-name="HeaderUserAvatar"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Header sections - vertically centered */
+[data-name="HeaderLeft"],
+[data-name="HeaderRight"] {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+[data-name="HeaderRight"] {
+  justify-content: flex-end !important;
+}
+
+/* All header content vertically centered */
+[data-name="IconButton"],
+[data-name="Logo"],
+[data-name="UserProfile"],
+[data-name="LogoIcon"],
+[data-name="ProfileImage"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Footer responsive layout */
+@media (max-width: 767px) {
+  [data-name="FooterColumn"] {
+    width: calc(50% - 16px) !important;
+  }
+  
+  [data-name="FooterBrandColumn"] {
+    width: 100% !important;
+  }
+}
+
+@media (min-width: 768px) {
+  [data-name="FooterColumn"],
+  [data-name="FooterBrandColumn"] {
+    width: auto !important;
+  }
+}
+
+/* Animate arrow icon to slide right on button hover */
+[data-button-arrow="true"]:hover svg,
+[data-button-arrow="true"]:hover path,
+a[data-button-arrow="true"]:hover svg,
+a[data-button-arrow="true"]:hover path {
+  transform: translateX(4px) !important;
+}
+
+[data-button-arrow="true"] svg,
+[data-button-arrow="true"] path,
+a[data-button-arrow="true"] svg,
+a[data-button-arrow="true"] path {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-block;
+}

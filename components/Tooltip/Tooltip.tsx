@@ -1,41 +1,28 @@
 "use client"
 
 import * as RadixTooltip from "@radix-ui/react-tooltip"
-import { cva, type VariantProps } from "class-variance-authority"
-import React from "react"
-import { twMerge } from "tailwind-merge"
+import { styled, Text } from "tamagui"
 
-const tooltipContent = cva([], {
-  variants: {
-    intent: {
-      primary: ["rounded-md", "bg-zinc-700", "font-sans", "text-white"],
-    },
-    size: {
-      md: ["px-4", "py-2.5", "text-xs"],
-    },
-  },
-  defaultVariants: {
-    intent: "primary",
-    size: "md",
-  },
+// Styled tooltip content using Tamagui
+// Using tamagui package for React 19 compatibility
+const TooltipContent = styled(RadixTooltip.Content, {
+  name: "TooltipContent",
+  borderRadius: "$2",
+  backgroundColor: "$gray9", // Darkest grey
+  color: "white",
+  paddingHorizontal: "$4",
+  paddingVertical: "$2.5",
+  maxWidth: 200,
 })
 
-const tooltipArrow = cva([], {
-  variants: {
-    intent: {
-      primary: ["fill-zinc-700"],
-    },
-    size: {
-      md: ["w-4", "h-2"],
-    },
-  },
-  defaultVariants: {
-    intent: "primary",
-    size: "md",
-  },
+const TooltipArrow = styled(RadixTooltip.Arrow, {
+  name: "TooltipArrow",
+  fill: "$gray9",
+  width: 16,
+  height: 8,
 })
 
-export interface TooltipProps extends VariantProps<typeof tooltipContent>, RadixTooltip.TooltipProps {
+export interface TooltipProps extends RadixTooltip.TooltipProps {
   explainer: React.ReactElement | string
   children: React.ReactElement
   className?: string
@@ -49,25 +36,28 @@ export function Tooltip({
   open,
   defaultOpen,
   onOpenChange,
-  intent,
-  size,
   side = "top",
   className,
   withArrow,
 }: TooltipProps) {
+  const content =
+    typeof explainer === "string" ? (
+      <Text fontFamily="$body" fontSize="$1" color="white">
+        {explainer}
+      </Text>
+    ) : (
+      explainer
+    )
+
   return (
     <RadixTooltip.Provider>
       <RadixTooltip.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange} delayDuration={200}>
         <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
         <RadixTooltip.Portal>
-          <RadixTooltip.Content
-            side={side}
-            sideOffset={5}
-            className={twMerge(tooltipContent({ intent, size, className }))}
-          >
-            {explainer}
-            {withArrow ? <RadixTooltip.Arrow className={twMerge(tooltipArrow({ intent, size, className }))} /> : null}
-          </RadixTooltip.Content>
+          <TooltipContent side={side} sideOffset={5} className={className}>
+            {content}
+            {withArrow ? <TooltipArrow /> : null}
+          </TooltipContent>
         </RadixTooltip.Portal>
       </RadixTooltip.Root>
     </RadixTooltip.Provider>
