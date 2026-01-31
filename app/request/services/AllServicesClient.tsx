@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { type KeyboardEvent, useEffect, useRef, useState } from "react"
 import { styled, Text, XStack, YStack } from "tamagui"
 import { BackButton } from "components/BackButton/BackButton"
+import { handleKeyActivate } from "components/Header/keyboard"
 import { ContentContainer, PageContainer, Title } from "components/styled/request-flow"
 import { readRequestDetailsFromSessionStorage, writeRequestDetailsToSessionStorage } from "lib/request/storage"
 
@@ -68,10 +69,9 @@ export function AllServicesClient({ services: initialServices }: AllServicesClie
   const router = useRouter()
   const searchParams = useSearchParams()
   const urlSelectedService = searchParams.get("service")
-  const [selectedService, setSelectedService] = useState<string | null>(() => {
-    return urlSelectedService ?? readRequestDetailsFromSessionStorage()?.service ?? null
-  })
+  const [selectedService, setSelectedService] = useState<string | null>(urlSelectedService)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hasHydratedRef = useRef(false)
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -81,6 +81,18 @@ export function AllServicesClient({ services: initialServices }: AllServicesClie
       }
     }
   }, [])
+
+  // Hydrate from sessionStorage after mount to avoid SSR/CSR hydration mismatch.
+  useEffect(() => {
+    if (urlSelectedService) return
+    if (hasHydratedRef.current) return
+    hasHydratedRef.current = true
+
+    const stored = readRequestDetailsFromSessionStorage()
+    if (stored?.service) {
+      setSelectedService(stored.service)
+    }
+  }, [urlSelectedService])
 
   const handleServiceSelect = (serviceSlug: string) => {
     setSelectedService(serviceSlug)
@@ -100,11 +112,8 @@ export function AllServicesClient({ services: initialServices }: AllServicesClie
     }, 200)
   }
 
-  const handleKeyDown = (event: KeyboardEvent, serviceSlug: string) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault()
-      handleServiceSelect(serviceSlug)
-    }
+  const handleServiceKeyDown = (event: KeyboardEvent<HTMLElement>, serviceSlug: string) => {
+    handleKeyActivate(event, () => handleServiceSelect(serviceSlug))
   }
 
   return (
@@ -124,8 +133,8 @@ export function AllServicesClient({ services: initialServices }: AllServicesClie
                   key={service.id}
                   className="service-tile"
                   onPress={() => handleServiceSelect(service.slug)}
-                  onKeyDown={(event: KeyboardEvent) =>
-                    handleKeyDown(event, service.slug)
+                  onKeyDown={(event: KeyboardEvent<HTMLElement>) =>
+                    handleServiceKeyDown(event, service.slug)
                   }
                   role="button"
                   tabIndex={0}

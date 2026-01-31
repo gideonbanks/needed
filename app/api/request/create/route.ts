@@ -48,10 +48,12 @@ const createRequestSchema = z.object({
   lng: z.number().min(-180).max(180),
   details: z.string().min(1),
   photoUrl: z.string().url().optional(),
+  name: z.string().min(1).max(200).optional(),
   phone: z
     .string()
     .min(1)
-    .regex(/^\+?[1-9]\d{6,14}$/, "Invalid phone format"),
+    // Accept NZ local format (0xx...) or international (+64...)
+    .regex(/^(?:0\d{8,10}|\+?64\d{8,10}|\+?[1-9]\d{6,14})$/, "Invalid phone format"),
 })
 
 const getClientKey = (request: Request) => {
@@ -135,7 +137,12 @@ export async function POST(request: Request) {
     // Get or create customer by phone using upsert to avoid race conditions
     const { data: customer, error: customerError } = await supabase
       .from("customers")
-      .upsert({ phone: validated.phone }, { onConflict: "phone" })
+      .upsert(
+        validated.name
+          ? { phone: validated.phone, name: validated.name }
+          : { phone: validated.phone },
+        { onConflict: "phone" }
+      )
       .select("id")
       .single()
 

@@ -14,6 +14,10 @@ export const env = createEnv({
       process.env.NODE_ENV === "production" ? z.string().min(1) : z.string().min(1).optional(),
     REQUEST_SEND_TOKEN_SECRET:
       process.env.NODE_ENV === "production" ? z.string().min(32) : z.string().min(32).optional(),
+    // Twilio SMS (optional in dev, required in production)
+    TWILIO_ACCOUNT_SID: z.string().min(1).optional(),
+    TWILIO_AUTH_TOKEN: z.string().min(1).optional(),
+    TWILIO_FROM_NUMBER: z.string().regex(/^\+\d{10,15}$/).optional(),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z
@@ -51,5 +55,8 @@ export const env = createEnv({
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_ENABLE_MOCK_OTP: process.env.NEXT_PUBLIC_ENABLE_MOCK_OTP,
+    TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
+    TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
+    TWILIO_FROM_NUMBER: process.env.TWILIO_FROM_NUMBER,
   },
 })

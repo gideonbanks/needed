@@ -20,9 +20,10 @@ CREATE OR REPLACE FUNCTION dispatch_request_batch(
   p_limit int DEFAULT 3
 )
 RETURNS TABLE (
-  provider_id uuid
+  matched_provider_id uuid
 )
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 DECLARE
   v_service_id uuid;
@@ -114,6 +115,6 @@ BEGIN
     ON CONFLICT (request_id, provider_id) DO NOTHING
     RETURNING provider_id
   )
-  SELECT inserted.provider_id FROM inserted;
+  SELECT inserted.provider_id AS matched_provider_id FROM inserted;
 END;
 $$;

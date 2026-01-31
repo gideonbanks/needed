@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { Children, cloneElement, isValidElement, useState } from "react"
 import type { CSSProperties, MouseEvent, ReactNode } from "react"
 import { type GetProps, styled, Button as TamaguiButton, Text } from "tamagui"
 
@@ -35,7 +35,7 @@ const StyledButton = styled(TamaguiButton, {
       },
       secondary: {
         backgroundColor: "transparent",
-        borderColor: "$primary7",
+        borderColor: "$borderColor",
         hoverStyle: {
           backgroundColor: "$primary7",
           borderColor: "$primary7",
@@ -122,18 +122,34 @@ export function Button({
   // Use numeric token references directly to avoid Tamagui font size resolution issues
   // These map to the same values: sm -> $3 (36px), lg -> $5 (52px)
   const buttonFontSize = size === "lg" ? "$5" : "$3"
-  
+
+  // Process children to pass color to icon components
+  const processChildrenWithColor = (children: ReactNode, color: string) => {
+    return Children.map(children, (child) => {
+      if (isValidElement(child) && typeof child.type !== "string") {
+        // Clone non-string elements (icons, etc.) and pass color prop
+        return cloneElement(child as React.ReactElement<{ color?: string }>, { color })
+      }
+      return child
+    })
+  }
+
+  const secondaryIconColor = isHovered ? "white" : "$color"
+
   const childrenWithColor = intent === "secondary" ? (
     <Text
       fontFamily="$body"
       fontSize={buttonFontSize}
-      color={isHovered ? "white" : "$primary7"}
+      color={isHovered ? "white" : "$color"}
       style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
         transition: "color 0.2s ease",
         textDecorationLine: underline ? "underline" : undefined,
       }}
     >
-      {children}
+      {processChildrenWithColor(children, secondaryIconColor)}
     </Text>
   ) : intent === "primary" || intent === "accent" ? (
     <Text
@@ -143,6 +159,7 @@ export function Button({
       style={{
         display: "inline-flex",
         alignItems: "center",
+        gap: 6,
         textDecorationLine: underline ? "underline" : undefined,
       }}
     >

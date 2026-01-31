@@ -1,5 +1,6 @@
 "use client"
 
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import {
   ArrowRight,
   BrushCleaning,
@@ -9,6 +10,7 @@ import {
   Instagram,
   LayoutGrid,
   Linkedin,
+  LogOut,
   Menu,
   Moon,
   Phone,
@@ -25,6 +27,7 @@ import {
 import type { Route } from "next"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   type CSSProperties,
   Fragment,
@@ -37,6 +40,7 @@ import { H1, styled, Text, useMedia, XStack, YStack } from "tamagui"
 import { Button } from "components/Button/Button"
 import { LogoImage } from "components/Logo/LogoImage"
 import { useTheme } from "lib/theme"
+import { handleKeyActivate, handleKeyClick as handleHeaderKeyClick } from "components/Header/keyboard"
 
 // Header components
 const HeaderContainer = styled(YStack, {
@@ -970,7 +974,13 @@ const FOOTER_LINK_SECTIONS: Array<{
   },
 ]
 
+interface ProviderProfile {
+  name: string | null
+  avatarUrl: string | null
+}
+
 export default function Web() {
+  const router = useRouter()
   const { theme, toggleTheme } = useTheme()
   const media = useMedia()
   const isTablet = media.gtSm && media.md
@@ -978,8 +988,47 @@ export default function Web() {
   const isWide = media.gtSm
   const isDark = theme === "dark"
   const [showHeader, setShowHeader] = useState(true)
+  const [providerProfile, setProviderProfile] = useState<ProviderProfile | null>(null)
   const lastScrollYRef = useRef(0)
   const tickingRef = useRef(false)
+
+  const handleLogout = async () => {
+    await fetch("/api/provider/auth/logout", { method: "POST" })
+    setProviderProfile(null)
+    router.push("/")
+  }
+
+  useEffect(() => {
+    // Load cached profile immediately to prevent flash
+    const cached = localStorage.getItem("providerProfile")
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached) as unknown
+        if (parsed && typeof parsed === "object") {
+          const obj = parsed as { name?: unknown; avatarUrl?: unknown }
+          setProviderProfile({
+            name: typeof obj.name === "string" ? obj.name : null,
+            avatarUrl: typeof obj.avatarUrl === "string" ? obj.avatarUrl : null,
+          })
+        }
+      } catch {}
+    }
+
+    // Fetch fresh data from API
+    fetch("/api/provider/me")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data) {
+          const profile = { name: data.name, avatarUrl: data.avatarUrl }
+          setProviderProfile(profile)
+          localStorage.setItem("providerProfile", JSON.stringify(profile))
+        } else {
+          setProviderProfile(null)
+          localStorage.removeItem("providerProfile")
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1008,22 +1057,6 @@ export default function Web() {
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
-
-  const handleKeyActivate = (
-    event: KeyboardEvent<HTMLElement>,
-    onActivate: () => void
-  ) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault()
-      onActivate()
-    }
-  }
-
-  const handleKeyClick = (event: KeyboardEvent<HTMLElement>) => {
-    handleKeyActivate(event, () => {
-      ;(event.currentTarget as HTMLElement).click()
-    })
-  }
 
   const handleKeyToggleTheme = (event: KeyboardEvent<HTMLElement>) => {
     handleKeyActivate(event, toggleTheme)
@@ -1055,9 +1088,8 @@ export default function Web() {
   const heroContainerBorderColor = isDark
     ? "rgba(255, 255, 255, 0.2)"
     : "rgba(0, 0, 0, 0.1)"
-  const heroBadgeBg = isDark ? "rgba(80, 220, 170, 0.15)" : "rgba(1, 164, 147, 0.1)"
-  const heroBadgeAccent = isDark ? "white" : "#184153"
-  const heroBadgeTextColor = isDark ? "white" : "$primary7"
+  const heroBadgeBg = isDark ? "rgba(34, 84, 61, 0.9)" : "rgba(1, 164, 147, 0.1)"
+  const heroBadgeTextColor = isDark ? "#4ade80" : "$primary7"
   const heroHeadingColor = isDark ? "white" : "$gray9"
   const heroBenefitsJustify = isWide ? "flex-start" : "center"
   const servicesTitleColor = isDark ? "white" : "$gray9"
@@ -1118,14 +1150,29 @@ export default function Web() {
           style={{ ...headerBarLayoutStyle, ...headerStyle }}
         >
           <HeaderLeftGroup>
-            <HeaderMenuButton
-              role="button"
-              aria-label="Open menu"
-              tabIndex={0}
-              onKeyDown={handleKeyClick}
-            >
-              <Menu size={20} color="white" />
-            </HeaderMenuButton>
+            <XStack gap={5} alignItems="center">
+              <HeaderMenuButton
+                role="button"
+                aria-label="Open menu"
+                tabIndex={0}
+                onKeyDown={handleHeaderKeyClick}
+              >
+                <Menu size={20} color="white" />
+              </HeaderMenuButton>
+              <HeaderThemeButton
+                role="button"
+                aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+                tabIndex={0}
+                onPress={toggleTheme}
+                onKeyDown={handleKeyToggleTheme}
+              >
+                {theme === "light" ? (
+                  <Moon size={20} color="white" />
+                ) : (
+                  <Sun size={20} color="white" />
+                )}
+              </HeaderThemeButton>
+            </XStack>
           </HeaderLeftGroup>
           <HeaderLogoGroup>
             <Link href="/" style={LOGO_LINK_STYLE}>
@@ -1133,30 +1180,102 @@ export default function Web() {
             </Link>
           </HeaderLogoGroup>
           <HeaderRightGroup>
-            <HeaderThemeButton
-              role="button"
-              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-              tabIndex={0}
-              onPress={toggleTheme}
-              onKeyDown={handleKeyToggleTheme}
-            >
-              {theme === "light" ? (
-                <Moon size={20} color="white" />
-              ) : (
-                <Sun size={20} color="white" />
-              )}
-            </HeaderThemeButton>
-            <HeaderUserButton
-              role="button"
-              aria-label="Sign in"
-              tabIndex={0}
-              onKeyDown={handleKeyClick}
-            >
-              <HeaderUserAvatar>
-                <User size={18} color="$primary7" />
-              </HeaderUserAvatar>
-              <HeaderUserLabel>Sign in</HeaderUserLabel>
-            </HeaderUserButton>
+            {providerProfile ? (
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                  <HeaderUserButton
+                    role="button"
+                    aria-label="Open user menu"
+                    tabIndex={0}
+                  >
+                    <HeaderUserAvatar>
+                      {providerProfile.avatarUrl ? (
+                        <img
+                          src={providerProfile.avatarUrl}
+                          alt="Avatar"
+                          style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 16 }}
+                        />
+                      ) : (
+                        <User size={18} color="$primary7" />
+                      )}
+                    </HeaderUserAvatar>
+                    <HeaderUserLabel>
+                      {providerProfile.name || "Account"}
+                    </HeaderUserLabel>
+                  </HeaderUserButton>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.Content
+                    align="end"
+                    sideOffset={8}
+                    style={{
+                      backgroundColor: "white",
+                      borderRadius: 8,
+                      padding: 4,
+                      minWidth: 160,
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                      zIndex: 1001,
+                    }}
+                  >
+                    <DropdownMenu.Item asChild>
+                      <Link
+                        href="/provider/profile"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          padding: "8px 12px",
+                          borderRadius: 4,
+                          textDecoration: "none",
+                          color: "#333",
+                          fontSize: 14,
+                          cursor: "pointer",
+                          outline: "none",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f5f5f5")}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        <User size={16} color="#666" />
+                        Profile
+                      </Link>
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item
+                      onSelect={handleLogout}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "8px 12px",
+                        borderRadius: 4,
+                        color: "#333",
+                        fontSize: 14,
+                        cursor: "pointer",
+                        outline: "none",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f5f5f5")}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                    >
+                      <LogOut size={16} color="#666" />
+                      Log out
+                    </DropdownMenu.Item>
+                  </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Root>
+            ) : (
+              <Link href="/provider/login" style={LINK_RESET_STYLE}>
+                <HeaderUserButton
+                  role="button"
+                  aria-label="Sign in"
+                  tabIndex={0}
+                  onKeyDown={handleHeaderKeyClick}
+                >
+                  <HeaderUserAvatar>
+                    <User size={18} color="$primary7" />
+                  </HeaderUserAvatar>
+                  <HeaderUserLabel>Sign in</HeaderUserLabel>
+                </HeaderUserButton>
+              </Link>
+            )}
           </HeaderRightGroup>
         </HeaderBar>
       </HeaderContainer>
@@ -1209,7 +1328,7 @@ export default function Web() {
                 alignSelf={heroAlign}
                 backgroundColor={heroBadgeBg}
               >
-                <Clock size={16} color={heroBadgeAccent} />
+                <Clock size={16} color={heroBadgeTextColor} />
                 <HeroBadgeText color={heroBadgeTextColor}>
                   Hear back in 10 minutes
                 </HeroBadgeText>
@@ -1352,8 +1471,8 @@ export default function Web() {
       <WhyDifferentSection backgroundColor={heroContainerBg}>
         <WhyDifferentContainer>
           <YStack alignItems="center" gap="$4">
-            <WhyDifferentBadge>
-              <Clock size={16} color={heroBadgeAccent} />
+            <WhyDifferentBadge backgroundColor={heroBadgeBg}>
+              <Clock size={16} color={heroBadgeTextColor} />
               <WhyDifferentBadgeText color={heroBadgeTextColor}>
                 Our 10-minute promise
               </WhyDifferentBadgeText>

@@ -136,11 +136,12 @@ async function searchAddressFinder({
   const qClean = escapeSqlLike(q.trim())
   if (qClean.length < MIN_QUERY_LENGTH) return []
 
-  const clauses = [`road_name LIKE '%${qClean}%'`]
+  // Use UPPER() for case-insensitive search in ArcGIS SQL
+  const clauses = [`UPPER(road_name) LIKE UPPER('%${qClean}%')`]
   if (locality) {
     const locClean = escapeSqlLike(locality.trim())
     if (locClean) {
-      clauses.push(`(suburb_locality LIKE '${locClean}%' OR town_city LIKE '${locClean}%')`)
+      clauses.push(`(UPPER(suburb_locality) LIKE UPPER('${locClean}%') OR UPPER(town_city) LIKE UPPER('${locClean}%'))`)
     }
   }
   const where = clauses.join(" AND ")

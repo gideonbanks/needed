@@ -49,6 +49,7 @@ function SendingContent() {
 
   const [details, setDetails] = useState<string | null>(detailsParam)
   const [phone, setPhone] = useState<string | null>(phoneParam)
+  const [name, setName] = useState<string | null>(null)
   const [detailsLoaded, setDetailsLoaded] = useState(
     !!detailsParam || !!phoneParam
   )
@@ -67,6 +68,11 @@ function SendingContent() {
     const stored = readRequestDetailsFromSessionStorage()
     if (stored?.details) setDetails(stored.details)
     if (stored?.phone) setPhone(stored.phone)
+    const fullName = [stored?.firstName, stored?.lastName]
+      .map((s) => (typeof s === "string" ? s.trim() : ""))
+      .filter(Boolean)
+      .join(" ")
+    if (fullName) setName(fullName)
     setDetailsLoaded(true)
   }, [detailsParam, phoneParam, detailsLoaded])
 
@@ -123,6 +129,7 @@ function SendingContent() {
             lng: lngNum,
             details,
             phone,
+            name: name || undefined,
           }),
         })
         if (!response.ok) {

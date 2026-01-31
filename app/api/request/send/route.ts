@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { verifySendToken } from "lib/request/sendToken"
 import { createAdminClient } from "lib/supabase/admin"
+import { notifyProviders } from "lib/twilio/notify"
 import { env } from "../../../../env.mjs"
 
 const sendRequestSchema = z.object({
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
           p_limit: number
         }
       ) => Promise<{
-        data: Array<{ provider_id: string }> | null
+        data: Array<{ matched_provider_id: string }> | null
         error: { message?: string } | null
       }>
     }
@@ -90,6 +91,14 @@ export async function POST(request: Request) {
       }
 
       return NextResponse.json({ error: message }, { status })
+    }
+
+    // Notify providers via SMS (fire-and-forget)
+    const providerIds = dispatchedProviders?.map((p) => p.matched_provider_id) ?? []
+    if (providerIds.length > 0) {
+      notifyProviders(providerIds, requestId).catch((err) => {
+        console.error("Failed to notify providers:", err)
+      })
     }
 
     return NextResponse.json({

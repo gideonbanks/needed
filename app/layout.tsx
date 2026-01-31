@@ -6,6 +6,11 @@ import { TamaguiProviderWrapper } from "lib/tamagui"
 export const metadata: Metadata = {
   title: "Needed | Find Trusted Local Pros Near You Fast",
   description: "Need local services fast? Tell us what you need and when. Needed sends your request to up to 3 trusted pros near you who can contact you within minutes. Free to use.",
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    shortcut: [{ url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/icon.png", type: "image/png" }],
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

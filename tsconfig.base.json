@@ -21,5 +21,9 @@
       "@needed/config/*": ["./packages/config/*"]
     }
   },
+  // This file is intended to be extended by other tsconfigs.
+  // Prevent editor/tsserver from treating it as an active project (which would
+  // otherwise include the whole repo and can cause confusing resolution errors).
+  "include": [],
   "exclude": ["node_modules", "dist", ".next", "build"]
 }

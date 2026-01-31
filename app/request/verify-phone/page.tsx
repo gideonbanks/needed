@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation"
 import { type ChangeEvent, type InputHTMLAttributes, Suspense, useEffect, useState } from "react"
-import { Paragraph, styled, YStack } from "tamagui"
+import { Paragraph, styled, XStack, YStack } from "tamagui"
 import { BackButton } from "components/BackButton/BackButton"
 import { Button } from "components/Button/Button"
 import {
@@ -21,43 +21,24 @@ const FormField = styled(YStack, {
   gap: "$2",
 })
 
-const StyledInput = createNamedStyle("input", {
-  name: "StyledInput",
+// Match the request details page input styling (Your street / Job details)
+const NameInput = createNamedStyle("input", {
+  name: "NameInput",
   width: "100%",
   minHeight: 48,
-  fontSize: "$4",
+  fontSize: 18,
   borderWidth: 1,
-  borderColor: "$borderColor", // Theme-aware border
-  borderRadius: "$2", // Smaller radius to match buttons
+  borderColor: "$borderColor",
+  borderRadius: "$2",
   paddingHorizontal: "$4",
-  backgroundColor: "$background",
+  backgroundColor: "$backgroundStrong",
+  color: "$color",
   fontFamily: "$body",
   outline: "none",
   focusStyle: {
     borderColor: "$accent6",
     borderWidth: 2,
-    boxShadow: "0 0 0 3px rgba(1, 164, 147, 0.1)",
-  },
-}) as React.ComponentType<InputHTMLAttributes<HTMLInputElement>>
-
-const OTPInput = createNamedStyle("input", {
-  name: "OTPInput",
-  width: "100%",
-  minHeight: 48,
-  fontSize: "$6",
-  borderWidth: 1,
-  borderColor: "$gray4",
-  borderRadius: "$2", // Smaller radius to match buttons
-  paddingHorizontal: "$4",
-  backgroundColor: "$background",
-  letterSpacing: "$2",
-  fontWeight: "600",
-  fontFamily: "$body",
-  outline: "none",
-  focusStyle: {
-    borderColor: "$accent6",
-    borderWidth: 2,
-    boxShadow: "0 0 0 3px rgba(1, 164, 147, 0.1)",
+    boxShadow: "0 0 0 3px rgba(var(--color-accent-6-rgb), 0.1)",
   },
 }) as React.ComponentType<InputHTMLAttributes<HTMLInputElement>>
 
@@ -84,7 +65,9 @@ function VerifyPhoneContent() {
 
   const [phone, setPhone] = useState("")
   const [otp, setOtp] = useState("")
-  const [step, setStep] = useState<"phone" | "otp">("phone")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [step, setStep] = useState<"phone" | "otp" | "name">("phone")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -106,6 +89,8 @@ function VerifyPhoneContent() {
 
     const stored = readRequestDetailsFromSessionStorage()
     if (stored?.details) setDetails(stored.details)
+    if (stored?.firstName) setFirstName(stored.firstName)
+    if (stored?.lastName) setLastName(stored.lastName)
 
     setDetailsLoaded(true)
   }, [detailsParam, detailsLoaded])
@@ -169,6 +154,20 @@ function VerifyPhoneContent() {
     }
   }
 
+  // Clean phone and normalize to local NZ format (0xx...)
+  const normalizePhone = (rawPhone: string): string => {
+    const cleaned = rawPhone.replace(/[\s\-\(\)\.]/g, "")
+    // Convert international +64xx to local 0xx
+    if (cleaned.startsWith("+64")) {
+      return "0" + cleaned.slice(3)
+    }
+    // Convert 64xx (without +) to local 0xx
+    if (cleaned.startsWith("64") && cleaned.length > 2) {
+      return "0" + cleaned.slice(2)
+    }
+    return cleaned
+  }
+
   const handleVerifyOTP = async () => {
     if (otp.length !== 6) {
       setError("Please enter the 6-digit code")
@@ -194,8 +193,10 @@ function VerifyPhoneContent() {
         throw new Error("Invalid code")
       }
 
+      const normalizedPhone = normalizePhone(phone)
+
       try {
-        writeRequestDetailsToSessionStorage({ details, phone })
+        writeRequestDetailsToSessionStorage({ details, phone: normalizedPhone })
       } catch {
         // Ignore storage access errors (e.g., private browsing mode)
         if (process.env.NODE_ENV !== "production") {
@@ -203,16 +204,39 @@ function VerifyPhoneContent() {
         }
       }
 
-      // Navigate to sending/status page
-      router.push(
-        `/request/sending?service=${service}&time=${time}&suburb=${encodeURIComponent(suburb)}&lat=${lat}&lng=${lng}`
-      )
+      // Next step: collect name before sending.
+      setStep("name")
     } catch (err) {
       console.error("Failed to verify OTP:", err)
       setError("Invalid code. Please try again.")
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleContinueWithName = () => {
+    const first = firstName.trim()
+    const last = lastName.trim()
+
+    if (!first || !last) {
+      setError("Please enter your first and last name")
+      return
+    }
+
+    const normalizedPhone = normalizePhone(phone)
+
+    try {
+      writeRequestDetailsToSessionStorage({ details, phone: normalizedPhone, firstName: first, lastName: last })
+    } catch {
+      // Ignore storage access errors (e.g., private browsing mode)
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Session storage write failed (possibly private browsing)")
+      }
+    }
+
+    router.push(
+      `/request/sending?service=${service}&time=${time}&suburb=${encodeURIComponent(suburb)}&lat=${lat}&lng=${lng}`
+    )
   }
 
   return (
@@ -234,7 +258,7 @@ function VerifyPhoneContent() {
         }}
       />
       <ContentContainer>
-        <Title>Confirm your number</Title>
+        <Title>{step === "name" ? "What is your name?" : "Confirm your number"}</Title>
         <Subtitle marginBottom="$6">
           We'll only use this so pros can contact you about this request.
         </Subtitle>
@@ -242,7 +266,8 @@ function VerifyPhoneContent() {
         {step === "phone" ? (
           <>
             <FormField>
-              <StyledInput
+              <NameInput
+                id="request-phone"
                 type="tel"
                 placeholder="021 123 4567"
                 value={phone}
@@ -262,10 +287,11 @@ function VerifyPhoneContent() {
               {loading ? "Sending..." : "Send code"}
             </Button>
           </>
-        ) : (
+        ) : step === "otp" ? (
           <>
             <FormField>
-              <OTPInput
+              <NameInput
+                id="request-otp"
                 type="text"
                 inputMode="numeric"
                 placeholder="000000"
@@ -301,6 +327,47 @@ function VerifyPhoneContent() {
                 Change number
               </Button>
             </YStack>
+          </>
+        ) : (
+          <>
+            <XStack
+              width="100%"
+              gap="$3"
+              flexDirection="column"
+              $gtSm={{ flexDirection: "row" }}
+            >
+              <FormField flex={1}>
+                <NameInput
+                  id="request-first-name"
+                  type="text"
+                  placeholder="First name"
+                  value={firstName}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
+                  style={{ fontFamily: "inherit" }}
+                  autoFocus
+                />
+              </FormField>
+              <FormField flex={1}>
+                <NameInput
+                  id="request-last-name"
+                  type="text"
+                  placeholder="Last name"
+                  value={lastName}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
+                  style={{ fontFamily: "inherit" }}
+                />
+                {error ? <ErrorMessage>{error}</ErrorMessage> : null}
+              </FormField>
+            </XStack>
+
+            <Button
+              onClick={handleContinueWithName}
+              size="lg"
+              width="100%"
+              disabled={loading}
+            >
+              Send request
+            </Button>
           </>
         )}
       </ContentContainer>

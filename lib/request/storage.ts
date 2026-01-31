@@ -3,6 +3,8 @@ import { REQUEST_DETAILS_STORAGE_KEY } from "./constants"
 export type StoredRequestDetails = {
   details: string | null
   phone: string | null
+  firstName?: string | null
+  lastName?: string | null
   suburb?: string | null
   lat?: number | null
   lng?: number | null
@@ -21,6 +23,8 @@ export function readRequestDetailsFromSessionStorage(): StoredRequestDetails | n
         const obj = parsed as {
           details?: unknown
           phone?: unknown
+          firstName?: unknown
+          lastName?: unknown
           suburb?: unknown
           lat?: unknown
           lng?: unknown
@@ -30,6 +34,8 @@ export function readRequestDetailsFromSessionStorage(): StoredRequestDetails | n
         return {
           details: typeof obj.details === "string" ? obj.details : null,
           phone: typeof obj.phone === "string" ? obj.phone : null,
+          firstName: typeof obj.firstName === "string" ? obj.firstName : null,
+          lastName: typeof obj.lastName === "string" ? obj.lastName : null,
           suburb: typeof obj.suburb === "string" ? obj.suburb : null,
           lat: typeof obj.lat === "number" && Number.isFinite(obj.lat) ? obj.lat : null,
           lng: typeof obj.lng === "number" && Number.isFinite(obj.lng) ? obj.lng : null,

@@ -28,7 +28,7 @@ const config: NextConfig = {
     "@tamagui/config",
     "@tamagui/animations-react-native",
     "@tamagui/react-native-svg",
-    "react-native-svg", // Also transpile react-native-svg to avoid issues
+    "react-native-svg",
   ],
   webpack: (config, { isServer, webpack, dev }) => {
     // Note: Webpack may show warnings about serializing large strings in cache.

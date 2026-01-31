@@ -170,6 +170,40 @@ textarea:focus {
   font-size: var(--request-details-font-size) !important;
 }
 
+/* Request name step (/request/verify-phone): match request details font sizing */
+#request-first-name,
+#request-last-name {
+  --request-details-font-size: 18px;
+  font-size: var(--request-details-font-size) !important;
+}
+
+#request-first-name::placeholder,
+#request-last-name::placeholder {
+  font-size: var(--request-details-font-size) !important;
+}
+
+#request-first-name::-webkit-input-placeholder,
+#request-last-name::-webkit-input-placeholder {
+  font-size: var(--request-details-font-size) !important;
+}
+
+/* Request phone + OTP (/request/verify-phone): match request details font sizing */
+#request-phone,
+#request-otp {
+  --request-details-font-size: 18px;
+  font-size: var(--request-details-font-size) !important;
+}
+
+#request-phone::placeholder,
+#request-otp::placeholder {
+  font-size: var(--request-details-font-size) !important;
+}
+
+#request-phone::-webkit-input-placeholder,
+#request-otp::-webkit-input-placeholder {
+  font-size: var(--request-details-font-size) !important;
+}
+
 /* Service cards on /request page: 2 per row on MOBILE only */
 /* Desktop keeps original layout (3 cards per row) */
 @media (max-width: 639px) {
