@@ -40,7 +40,7 @@ Non-negotiables:
 - 1 decision per screen
 - 1–3 items per screen
 - Big tap targets
-- No account needed to request help
+- No account needed to request a service
 - Fast defaults: suburb autofill, simple choices, clear CTAs
 
 ---
@@ -52,7 +52,7 @@ Copy:
 - Subtitle: We’ll send your request to 3 available pros.
 - Tiles (top 6): Plumber, Electrician, Locksmith, Movers, Carpet cleaning, Rubbish removal
 - Secondary: See all services
-- Footer: No account needed.
+- Footer: No account needed to request a service.
 
 Validation:
 - If no selection: “Choose a service to continue.”
