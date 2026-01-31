@@ -752,26 +752,35 @@ export default function ProviderDashboardPage() {
   const [providerCredits, setProviderCredits] = useState<number>(0)
 
   useEffect(() => {
-    // Fetch jobs
+    // Fetch jobs - redirect to login if not authenticated
     fetch("/api/provider/jobs")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.jobs && data.jobs.length > 0) {
-          setJobs(data.jobs)
-        } else {
-          setJobs(DEMO_JOBS)
+      .then((res) => {
+        if (res.status === 401) {
+          router.push("/provider/login")
+          return null
         }
+        return res.json()
+      })
+      .then((data) => {
+        if (!data) return
+        setJobs(Array.isArray(data.jobs) ? data.jobs : [])
       })
       .catch(() => {
-        setJobs(DEMO_JOBS)
+        setJobs([])
       })
       .finally(() => setLoading(false))
 
     // Fetch provider credits
     fetch("/api/provider/me")
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => {
+        if (res.status === 401) {
+          router.push("/provider/login")
+          return null
+        }
+        return res.ok ? res.json() : null
+      })
       .then((data) => {
-        if (typeof data?.credits === "number") {
+        if (data && typeof data.credits === "number") {
           setProviderCredits(data.credits)
         }
       })
