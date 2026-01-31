@@ -11,10 +11,9 @@ import {
   Title,
 } from "components/styled/request-flow"
 import {
+  AuthInput,
   ErrorMessage,
   FormField,
-  OTPInput,
-  StyledInput,
 } from "lib/provider/form-components"
 import { cleanPhoneNumber, validateNZPhone } from "lib/provider/utils"
 
@@ -121,12 +120,13 @@ export default function ProviderSignupPage() {
         {step === "phone" ? (
           <>
             <FormField>
-              <StyledInput
+              <AuthInput
+                id="provider-phone"
                 type="tel"
                 placeholder="021 123 4567"
                 value={phone}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
-                style={{ textAlign: "center" }}
+                style={{ textAlign: "center", fontFamily: "inherit" }}
                 autoFocus
               />
               {error ? <ErrorMessage>{error}</ErrorMessage> : null}
@@ -144,7 +144,7 @@ export default function ProviderSignupPage() {
             <YStack marginTop="$4" alignItems="center">
               <Paragraph fontSize="$3" color="$colorSecondary">
                 Already have an account?{" "}
-                <Link href="/provider/login" style={{ color: "inherit", fontWeight: 600 }}>
+                <Link href="/login" style={{ color: "inherit", fontWeight: 600 }}>
                   Log in
                 </Link>
               </Paragraph>
@@ -153,13 +153,14 @@ export default function ProviderSignupPage() {
         ) : (
           <>
             <FormField>
-              <OTPInput
+              <AuthInput
+                id="provider-otp"
                 type="text"
                 inputMode="numeric"
                 placeholder="000000"
                 value={otp}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                style={{ textAlign: "center" }}
+                style={{ textAlign: "center", fontFamily: "inherit" }}
                 autoFocus
                 maxLength={6}
               />

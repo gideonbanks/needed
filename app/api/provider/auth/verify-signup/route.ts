@@ -11,19 +11,19 @@ const verifySignupSchema = z.object({
   code: z.string().length(6),
 })
 
-// Normalize NZ phone to E.164 format (+64...)
+// Normalize NZ phone to local format (021...)
 function normalizeNzPhone(phone: string): string {
   const cleaned = phone.replace(/[\s\-\(\)\.]/g, "")
   if (cleaned.startsWith("+64")) {
-    return cleaned
+    return "0" + cleaned.slice(3)
   }
-  if (cleaned.startsWith("64")) {
-    return "+" + cleaned
+  if (cleaned.startsWith("64") && cleaned.length > 2) {
+    return "0" + cleaned.slice(2)
   }
   if (cleaned.startsWith("0")) {
-    return "+64" + cleaned.slice(1)
+    return cleaned
   }
-  return "+64" + cleaned
+  return "0" + cleaned
 }
 
 export async function POST(request: Request) {

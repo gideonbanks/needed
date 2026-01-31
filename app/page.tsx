@@ -1262,19 +1262,78 @@ export default function Web() {
                 </DropdownMenu.Portal>
               </DropdownMenu.Root>
             ) : (
-              <Link href="/provider/login" style={LINK_RESET_STYLE}>
-                <HeaderUserButton
-                  role="button"
-                  aria-label="Sign in"
-                  tabIndex={0}
-                  onKeyDown={handleHeaderKeyClick}
-                >
-                  <HeaderUserAvatar>
-                    <User size={18} color="$primary7" />
-                  </HeaderUserAvatar>
-                  <HeaderUserLabel>Sign in</HeaderUserLabel>
-                </HeaderUserButton>
-              </Link>
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                  <HeaderUserButton
+                    role="button"
+                    aria-label="Open user menu"
+                    tabIndex={0}
+                    onKeyDown={handleHeaderKeyClick}
+                  >
+                    <HeaderUserAvatar>
+                      <User size={18} color="$primary7" />
+                    </HeaderUserAvatar>
+                    <HeaderUserLabel>Sign in</HeaderUserLabel>
+                  </HeaderUserButton>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.Content
+                    align="end"
+                    sideOffset={8}
+                    style={{
+                      backgroundColor: "white",
+                      borderRadius: 8,
+                      padding: 4,
+                      minWidth: 160,
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                      zIndex: 1001,
+                    }}
+                  >
+                    <DropdownMenu.Item asChild>
+                      <Link
+                        href={"/login" as any}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          padding: "8px 12px",
+                          borderRadius: 4,
+                          textDecoration: "none",
+                          color: "#333",
+                          fontSize: 14,
+                          cursor: "pointer",
+                          outline: "none",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f5f5f5")}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        Sign in
+                      </Link>
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item asChild>
+                      <Link
+                        href={"/register" as any}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          padding: "8px 12px",
+                          borderRadius: 4,
+                          textDecoration: "none",
+                          color: "#333",
+                          fontSize: 14,
+                          cursor: "pointer",
+                          outline: "none",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f5f5f5")}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        Register
+                      </Link>
+                    </DropdownMenu.Item>
+                  </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Root>
             )}
           </HeaderRightGroup>
         </HeaderBar>

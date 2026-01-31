@@ -5,15 +5,19 @@
 -- Run with: psql $DATABASE_URL -f supabase/seed/test_providers.sql
 -- Or via Supabase SQL editor
 
--- Insert test providers (approved status)
-INSERT INTO public.providers (id, phone, name, business_name, status) VALUES
-  ('11111111-1111-1111-1111-111111111111', '+6421000001', 'John Smith', 'Test Plumber Auckland', 'approved'),
-  ('22222222-2222-2222-2222-222222222222', '+6421000002', 'Jane Doe', 'Test Plumber Ponsonby', 'approved'),
-  ('33333333-3333-3333-3333-333333333333', '+6421000003', 'Bob Wilson', 'Test Electrician Newmarket', 'approved')
+-- Insert test providers (approved status with credits)
+-- Phone format: Local NZ (021...) - stored normalized for API lookup
+-- Login with: 021 000 001, 021 000 002, 021 000 003
+-- OTP code for all test accounts: 123456
+INSERT INTO public.providers (id, phone, name, business_name, status, credits) VALUES
+  ('11111111-1111-1111-1111-111111111111', '021000001', 'John Smith', 'Test Plumber Auckland', 'approved', 100),
+  ('22222222-2222-2222-2222-222222222222', '021000002', 'Jane Doe', 'Test Plumber Ponsonby', 'approved', 50),
+  ('33333333-3333-3333-3333-333333333333', '021000003', 'Bob Wilson', 'Test Electrician Newmarket', 'approved', 75)
 ON CONFLICT (phone) DO UPDATE SET
   name = EXCLUDED.name,
   business_name = EXCLUDED.business_name,
-  status = EXCLUDED.status;
+  status = EXCLUDED.status,
+  credits = EXCLUDED.credits;
 
 -- Link providers to services
 -- Test Plumber Auckland: plumber, handyman
@@ -35,10 +39,10 @@ ON CONFLICT (provider_id, service_id) DO NOTHING;
 -- Auckland CBD: -36.848, 174.763
 -- Ponsonby: -36.856, 174.745
 -- Newmarket: -36.870, 174.778
-INSERT INTO public.provider_areas (provider_id, lat, lng, radius_km) VALUES
-  ('11111111-1111-1111-1111-111111111111', -36.848, 174.763, 15.0),
-  ('22222222-2222-2222-2222-222222222222', -36.856, 174.745, 10.0),
-  ('33333333-3333-3333-3333-333333333333', -36.870, 174.778, 12.0)
+INSERT INTO public.provider_areas (provider_id, lat, lng, radius_km, display_name) VALUES
+  ('11111111-1111-1111-1111-111111111111', -36.848, 174.763, 15.0, 'Auckland CBD, Auckland'),
+  ('22222222-2222-2222-2222-222222222222', -36.856, 174.745, 10.0, 'Ponsonby, Auckland'),
+  ('33333333-3333-3333-3333-333333333333', -36.870, 174.778, 12.0, 'Newmarket, Auckland')
 ON CONFLICT DO NOTHING;
 
 -- Set availability (2 available, 1 unavailable for testing)

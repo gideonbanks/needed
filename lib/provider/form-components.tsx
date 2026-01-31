@@ -46,6 +46,29 @@ export const StyledInput = createNamedStyle("input", {
 }) as React.ComponentType<InputHTMLAttributes<HTMLInputElement>>
 
 /**
+ * Auth input (provider login/signup) styled to match request flow inputs.
+ */
+export const AuthInput = createNamedStyle("input", {
+  name: "AuthInput",
+  width: "100%",
+  minHeight: 48,
+  fontSize: 18,
+  borderWidth: 1,
+  borderColor: "$borderColor",
+  borderRadius: "$2",
+  paddingHorizontal: "$4",
+  backgroundColor: "$backgroundStrong",
+  color: "$color",
+  fontFamily: "$body",
+  outline: "none",
+  focusStyle: {
+    borderColor: "$accent6",
+    borderWidth: 2,
+    boxShadow: "0 0 0 3px rgba(var(--color-accent-6-rgb), 0.1)",
+  },
+}) as React.ComponentType<InputHTMLAttributes<HTMLInputElement>>
+
+/**
  * OTP code input with larger text and letter spacing
  */
 export const OTPInput = createNamedStyle("input", {

@@ -204,6 +204,23 @@ textarea:focus {
   font-size: var(--request-details-font-size) !important;
 }
 
+/* Provider auth (login/signup): match request input font sizing */
+#provider-phone,
+#provider-otp {
+  --request-details-font-size: 18px;
+  font-size: var(--request-details-font-size) !important;
+}
+
+#provider-phone::placeholder,
+#provider-otp::placeholder {
+  font-size: var(--request-details-font-size) !important;
+}
+
+#provider-phone::-webkit-input-placeholder,
+#provider-otp::-webkit-input-placeholder {
+  font-size: var(--request-details-font-size) !important;
+}
+
 /* Service cards on /request page: 2 per row on MOBILE only */
 /* Desktop keeps original layout (3 cards per row) */
 @media (max-width: 639px) {

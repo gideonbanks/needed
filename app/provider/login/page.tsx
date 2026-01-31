@@ -2,23 +2,38 @@
 
 import { useRouter } from "next/navigation"
 import { type ChangeEvent, useState } from "react"
-import { YStack } from "tamagui"
+import { Paragraph, styled, YStack } from "tamagui"
 import { Button } from "components/Button/Button"
+import Link from "next/link"
+import { LogoImage } from "components/Logo/LogoImage"
 import {
   ContentContainer,
   Subtitle,
   Title,
 } from "components/styled/request-flow"
 import {
+  AuthInput,
   ErrorMessage,
   FormField,
-  OTPInput,
-  StyledInput,
 } from "lib/provider/form-components"
 import { cleanPhoneNumber, validateNZPhone } from "lib/provider/utils"
+import { useTheme } from "lib/theme"
+import { AUTH_CARD_BASE_STYLE, AUTH_LOGO_BADGE_STYLE } from "components/auth/cardStyles"
+
+const AuthCard = styled(YStack, {
+  name: "AuthCard",
+  ...AUTH_CARD_BASE_STYLE,
+})
+
+const LogoBadge = styled(YStack, {
+  name: "LogoBadge",
+  ...AUTH_LOGO_BADGE_STYLE,
+})
 
 export default function ProviderLoginPage() {
   const router = useRouter()
+  const { theme } = useTheme()
+  const isDark = theme === "dark"
 
   const [phone, setPhone] = useState("")
   const [otp, setOtp] = useState("")
@@ -110,74 +125,94 @@ export default function ProviderLoginPage() {
       justifyContent="center"
       padding="$4"
       minHeight="100vh"
+      backgroundColor={isDark ? "$background" : "$gray1"}
     >
-      <ContentContainer>
-        <Title>Provider Login</Title>
-        <Subtitle marginBottom="$6">
-          Enter your registered phone number to access your dashboard.
-        </Subtitle>
+      <AuthCard>
+        <LogoBadge>
+          <Link href="/" style={{ display: "flex", alignItems: "center" }}>
+            <LogoImage variant={isDark ? "dark" : "light"} style={{ height: 28, width: "auto" }} />
+          </Link>
+        </LogoBadge>
 
-        {step === "phone" ? (
-          <>
-            <FormField>
-              <StyledInput
-                type="tel"
-                placeholder="021 123 4567"
-                value={phone}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
-                style={{ textAlign: "center" }}
-                autoFocus
-              />
-              {error ? <ErrorMessage>{error}</ErrorMessage> : null}
-            </FormField>
+        <ContentContainer>
+          <Title>Login</Title>
+          <Subtitle marginBottom="$6">
+            Enter your registered phone number to access your dashboard.
+          </Subtitle>
 
-            <Button
-              onClick={handleSendOTP}
-              size="lg"
-              width="100%"
-              disabled={loading}
-            >
-              {loading ? "Sending..." : "Send code"}
-            </Button>
-          </>
-        ) : (
-          <>
-            <FormField>
-              <OTPInput
-                type="text"
-                inputMode="numeric"
-                placeholder="000000"
-                value={otp}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                style={{ textAlign: "center" }}
-                autoFocus
-                maxLength={6}
-              />
-              {error ? <ErrorMessage>{error}</ErrorMessage> : null}
-            </FormField>
+          {step === "phone" ? (
+            <>
+              <FormField>
+                <AuthInput
+                  id="provider-phone"
+                  type="tel"
+                  placeholder="021 123 4567"
+                  value={phone}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
+                  style={{ textAlign: "center", fontFamily: "inherit" }}
+                  autoFocus
+                />
+                {error ? <ErrorMessage>{error}</ErrorMessage> : null}
+              </FormField>
 
-            <YStack width="100%">
               <Button
-                onClick={handleVerifyOTP}
+                onClick={handleSendOTP}
                 size="lg"
-                disabled={loading || otp.length !== 6}
+                width="100%"
+                disabled={loading}
               >
-                {loading ? "Verifying..." : "Login"}
+                {loading ? "Sending..." : "Send code"}
               </Button>
-            </YStack>
 
-            <YStack marginTop="$2">
-              <Button
-                intent="secondary"
-                size="sm"
-                onClick={handleChangeNumber}
-              >
-                Change number
-              </Button>
-            </YStack>
-          </>
-        )}
-      </ContentContainer>
+              <YStack marginTop="$4" alignItems="center">
+                <Paragraph fontSize="$3" color="$colorSecondary">
+                  Don't have an account?{" "}
+                  <Link href="/register" style={{ color: "inherit", fontWeight: 600 }}>
+                    Register
+                  </Link>
+                </Paragraph>
+              </YStack>
+            </>
+          ) : (
+            <>
+              <FormField>
+                <AuthInput
+                  id="provider-otp"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="000000"
+                  value={otp}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  style={{ textAlign: "center", fontFamily: "inherit" }}
+                  autoFocus
+                  maxLength={6}
+                />
+                {error ? <ErrorMessage>{error}</ErrorMessage> : null}
+              </FormField>
+
+              <YStack width="100%">
+                <Button
+                  onClick={handleVerifyOTP}
+                  size="lg"
+                  disabled={loading || otp.length !== 6}
+                >
+                  {loading ? "Verifying..." : "Login"}
+                </Button>
+              </YStack>
+
+              <YStack marginTop="$2">
+                <Button
+                  intent="secondary"
+                  size="sm"
+                  onClick={handleChangeNumber}
+                >
+                  Change number
+                </Button>
+              </YStack>
+            </>
+          )}
+        </ContentContainer>
+      </AuthCard>
     </YStack>
   )
 }
